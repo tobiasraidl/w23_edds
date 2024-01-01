@@ -1,0 +1,73 @@
+```{r}
+library(dplyr)
+
+mae = read.csv("Values_for_MAE.csv", sep=";", dec=",")
+ndcg10 = read.csv("Values_for_NDCG10.csv", sep=";", dec=",")
+precision10 = read.csv("Values_for_Precision10.csv", sep=";", dec=",")
+recall10 = read.csv("Values_for_Recall10.csv", sep=";", dec=",")
+
+```
+
+```{r}
+mae_shapiro = apply(data.matrix(mae), 2, shapiro.test)
+ndcg10_shapiro = apply(data.matrix(ndcg10), 2, shapiro.test)
+precision10_shapiro = apply(data.matrix(precision10), 2, shapiro.test)
+recall10_shapiro = apply(data.matrix(recall10), 2, shapiro.test)
+
+mae_pvalues = c()
+ndcg10_pvalues =  c()
+precision10_pvalues =  c()
+recall10_pvalues =  c()
+for(el in mae_shapiro) {
+  mae_pvalues = append(mae_pvalues, el$p.value)
+}
+for(el in ndcg10_shapiro) {
+  ndcg10_pvalues = append(ndcg10_pvalues, el$p.value)
+}
+for(el in precision10_shapiro) {
+  precision10_pvalues = append(precision10_pvalues, el$p.value)
+}
+for(el in mae_shapiro) {
+  recall10_pvalues = append(recall10_pvalues, el$p.value)
+}
+mae_normality = mae_pvalues > 0.05
+ndcg10_normality = ndcg10_pvalues > 0.05
+precision10_normality = precision10_pvalues > 0.05
+recall10_normality = recall10_pvalues > 0.05
+
+mae_normality
+ndcg10_normality
+precision10_normality
+recall10_normality
+```
+
+```{r}
+# first is population mean, rest is distribution
+execute_ttest = function(vec) {
+  paper_result = vec[1]
+  our_results = vec[2:length(vec)]
+  result = t.test(our_results, mu=paper_result)
+  return(result$p.value)
+}
+
+mae_ttest_pvalues = apply(mae, 2, execute_ttest)
+ndcg10_ttest_pvalues = apply(ndcg10, 2, execute_ttest)
+precision10_ttest_pvalues = apply(precision10, 2, execute_ttest)
+recall10_ttest_pvalues = apply(recall10, 2, execute_ttest)
+mae_ttest = mae_ttest_pvalues > 0.05
+ndcg10_ttest = ndcg10_ttest_pvalues > 0.05
+precision10_ttest = precision10_ttest_pvalues > 0.05
+recall10_ttest = recall10_ttest_pvalues > 0.05
+# mae_normality TRUE if normally distributed
+# mae_ttest TRUE if not significant
+# mae_normality & mae_ttest
+#!mae_normality & !mae_ttest
+```
+
+```{r}
+hist(mae$Niche.x.NMF)
+hist(mae$BestSeller.x.MF)
+hist(mae$Niche.x.BPR)
+```
+
+
